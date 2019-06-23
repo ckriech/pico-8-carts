@@ -1,220 +1,200 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
--- function _init()
---  dev_mode=true
---  game_over=false
---  win=false
---  g=0.025 --gavity
--- 	make_player()
--- 	make_ground()
--- end
---
--- function _update()
---  if (not game_over) then
---  	move_player()
---  	-- check_land()
---  else
---  	if (btnp(5)) _init()
---  end
--- end
---
--- -- function check_land()
--- -- 	l_x=flr(p.x)
--- -- 	r_x=flr(p.x+7)
--- -- 	b_y=flr(p.y+7)
--- --
--- -- 	over_pad=l_x>pad.x and r_x<=pad.x+pad.width
--- -- 	on_pad=b_y>=pad.y-1
--- -- 	slow=p.dy<1
--- --
--- -- 	if (over_pad and on_pad and slow) then
--- -- 		end_game(true)
--- -- 	elseif (over_pad and on_pad) then
--- -- 		end_game(false)
--- -- 	else
--- -- 		for i=l_x,r_x do
--- -- 		 if (gnd[i]<=b_y) end_game(false)
--- -- 		end
--- -- 	end
--- -- end
---
--- function end_game(won)
--- 	game_over=true
--- 	win=won
---
--- 	if(win) then
--- 		sfx(1)
--- 	else
--- 		sfx(2)
--- 	end
--- end
---
--- function _draw()
--- 	cls()
--- 	draw_stars()
--- 	draw_ground()
--- 	draw_player()
---
--- 	if (game_over) then
--- 		if (win) then
--- 			print("you win!",48,48,11)
--- 		else
--- 			print("too bad!",48,48,8)
--- 		end
--- 		print("press ❎ to play again",20,70.5)
--- 	end
--- end
---
--- function rnde(low, high)
--- 	return flr(rnd(high-low+1)+low)
--- end
---
--- function draw_stars()
--- 	-- srand(1)
--- 	for i=1,50 do
--- 		pset(rnde(0,127),rnde(0,127),rnde(5,7))
--- 	end
--- 	srand(time())
--- end
---
--- -->8
--- function make_player()
--- 	p={}
--- 	p.x=60
--- 	p.y=8
--- 	p.dx=0
--- 	p.dy=0
--- 	p.sprite=1
--- 	p.alive=true
--- 	p.thrust=0.075
--- 	p.fuel=1000 --percent
--- end
---
--- function move_player()
--- 	p.dy+=g
---
--- 	thrust()
---
--- 	p.x+=p.dx
--- 	p.y+=p.dy
---
--- 	stay_on_screen()
--- end
---
--- function thrust()
---  if (p.fuel >= 1) then
--- 		if(btn(0)) p.dx-=p.thrust
--- 		if(btn(1)) p.dx+=p.thrust
--- 		if(btn(2)) p.dy-=p.thrust
---
--- 		if (btn(0) or btn(1) or btn(2)) then
--- 			sfx(0)
--- 			p.fuel-=5
--- 		end
--- 	end
--- end
---
--- function stay_on_screen()
--- 	 if (p.x<0) then   --left side
--- 			p.x=0
--- 			p.dx=0 end
---  	if (p.x>119) then --right side
---   	p.x=119
---   	p.dx=0
---  	end
---  	if (p.y<0) then
--- 			p.y=0
--- 			p.dy=0
--- 		end
--- end
---
--- function draw_player()
---  draw_fuel()
--- 	spr(p.sprite,p.x,p.y)
--- 	if (game_over and win) then
--- 		spr(4,p.x,p.y-8)
--- 	elseif (game_over) then
--- 		spr(5,p.x,p.y)
---  end
---  if (dev_mode) then
---  	print("p.dx="..p.dx,5,10)
---  	print("p.dy="..p.dy,5,17)
---  end
--- end
---
--- function draw_fuel()
--- 	line(10,10,10, flr(p.fuel/10) + 10)
--- end
--- -->8
--- function make_ground()
--- 	--create the ground
--- 	gnd={}
--- 	local top=96
---
---  for i=0,127 do
---   gnd[i]=top
---  end
---
--- 	--set up the landing pad
--- 	-- pad={}
--- 	-- pad.width=15
--- 	-- pad.x=rnde(0,126-pad.width)
--- 	-- pad.y=rnde(top,btm)
--- 	-- pad.sprite=2
---
--- 	-- for i=pad.x,pad.x+pad.width do
--- 	-- 	gnd[i]=pad.y
--- 	-- end
---  --
--- 	-- for i=pad.x+pad.width+1,127 do
--- 	-- 	local h=rnde(gnd[i-1]-3,gnd[i-1]+3)
--- 	-- 	gnd[i]=mid(top,h,btm)
--- 	-- end
---  --
--- 	-- for i=pad.x-1,0,-1 do
--- 	-- 	local h=rnde(gnd[i+1]-3,gnd[i+1]+3)
--- 	-- 	gnd[i]=mid(top,h,btm)
--- 	-- end
--- end
---
--- -- function draw_ground()
--- -- 	for i=0,127 do
--- -- 		line(i,gnd[i],i,127,5)
--- -- 	end
--- -- 	spr(pad.sprite,pad.x,pad.y,2,1)
--- -- end
---
--- function draw_ground()
--- 	for i=0,127 do
--- 		line(i,gnd[i],i,127,5)
--- 	end
--- end
-
 function _init()
- t,f,s=0,1,4 --tick,frame,step
- sp={1,2,3,4,5,6} --sprites
+ game={}
+ game.win=false
+ init_player()
+ init_round(1)
 end
 
+function init_round(n)
+ init_falling_shit()
+ init_ground()
+ game.state="paused"
+ game.round={num=n,bldrs=n*n+2,t=30-(n*n),ct=1,per_turn=n}
+end
+//stop creating builders after ct is up, then end level once all boulders are gone
+//remove builder once it is offscreen. Maybe make cool smashing animation
+//draw boulder sprite
+//draw real floor
+//add background
+//make some boulders come in at weird angles
+//power ups
 function _update()
- t=(t+1)%s --tick fwd
- if (t==0) f=f%#sp+1
+ if (game.state=="paused") then
+  if (btnp(4)) game.state="playing"
+ elseif (game.state=="playing") then
+  game.round.ct+=game.round.per_turn
+  if (next_boulder() and game.round.bldrs > 0) then
+   create_new_boulder()
+   game.round.ct=1
+   game.round.bldrs-=1
+  elseif(done_with_b() and game.round.num >= 5) then
+   boulders.list={}
+   game.state="game_over"
+   game.win=true
+  elseif(done_with_b()) then
+   init_round(game.round.num+1)
+  end
+  update_boulders()
+  update_player()
+ end
+end
+
+function next_boulder()
+ return game.round.ct >= game.round.t
+end
+
+function done_with_b()
+ local l=boulders.list
+ x=#l==0 and game.round.bldrs==0
+ printh(x)
+ return x
 end
 
 function _draw()
  cls()
- spr(sp[f],x,y)
+ draw_ground()
+ draw_player()
+ draw_boulders()
+ draw_stage_text()
 end
 
+function draw_stage_text()
+ if(game.state=="paused") then
+  print("press ❎ to start round X!",20,70.5)
+ elseif(game.state=="game_over") then
+  if (game.win) then
+   print("you win, pal!",48,48,11)
+  else
+   print("you lose, dork!",48,48,8)
+  end
+ end
+end
+
+function init_ground()
+ gnd={}
+ gnd.top=100
+end
+
+function draw_ground()
+ rectfill(0,127,127,gnd.top+8,5)
+end
+
+function init_falling_shit()
+ boulders={}
+ boulders.s=7
+ boulders.list={}
+ boulders.g=0.25
+end
+
+function create_new_boulder()
+ local b={}
+ b.x=flr(rnd(127-8)) //8 for sprite size
+ b.y=-10
+ b.dy=0
+ b.dx=0
+ b.hitbox={x=0,y=0,w=8,h=8}
+ b.g_multiplier=rnd(1)+.50
+ add(boulders.list, b)
+end
+
+function update_boulders()
+	for b in all(boulders.list) do
+		b.dy+=boulders.g*b.g_multiplier
+		b.y+=b.dy
+  if (collide(b, p)) then
+   game.state="game_over"
+   game.win=false
+  elseif (b.y==128) then
+   del(boulders.list, b)
+  end
+	end
+end
+
+function draw_boulders()
+	for b in all(boulders.list) do
+		spr(boulders.s,b.x,b.y)
+	end
+end
+
+function collide(obj, other)
+    if
+        other.x+other.hitbox.x+other.hitbox.w > obj.x+obj.hitbox.x and
+        other.y+other.hitbox.y+other.hitbox.h > obj.y+obj.hitbox.y and
+        other.x+other.hitbox.x < obj.x+obj.hitbox.x+obj.hitbox.w and
+        other.y+other.hitbox.y < obj.y+obj.hitbox.y+obj.hitbox.h
+    then
+        return true
+    end
+end
+
+-->8
+function init_player()
+ p={}
+ p.t=0 --tick
+ p.f=1 --frame
+ p.s=4 --step
+ p.x=0
+ p.y=100
+ p.dx=0
+ p.sp={1,2,3,4,5,6} --sprites
+ p.speed=1.5
+ p.moving=false
+ p.flip=false
+ p.hitbox={x=0,y=0,w=8,h=8}
+ p.moving_last_frame=false
+end
+
+function update_player()
+ p.dx=0
+ p.dy=0
+ p.moving_last_frame=p.moving
+ p.moving=false
+	if(btn(0)) then
+ 	p.dx-=p.speed
+ 	p.moving=true
+  p.flip=true
+ elseif(btn(1)) then
+  p.dx+=p.speed
+  p.moving=true
+  p.flip=false
+ end
+
+ animate_player()
+
+ p.x+=p.dx
+ p.y+=p.dy
+end
+
+ function animate_player()
+  if(p.moving and not p.moving_last_frame) then
+   p.f=2
+  end
+  if(p.moving_last_frame) then
+   p.t=(p.t+1)%p.s --tick fwd
+   if (p.t==0) p.f=p.f%#p.sp+1
+  end
+  if(not p.moving) then
+   p.t=0 --tick
+   p.f=1 --frame
+  end
+ end
+
+ function draw_player()
+  spr(p.sp[p.f],p.x,p.y)
+ end
+
 __gfx__
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000882000088220000882200000882000008880000088800000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000888800088888000888880000888800008888000088880000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000b45b000045b5000045b50000b45b0000bb450000bb4500000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb00000000000000000000000000000000000000000000000000000000000000000000000000
-007007000033bb000333bb00e333bb000033bb0000b33b0000b3bb00000000000000000000000000000000000000000000000000000000000000000000000000
-000000000b3ebb000ebbbbb000bbbbb00b3ebb003bb3eb000bb33ebb000000000000000000000000000000000000000000000000000000000000000000000000
-000000003bbbbbb03bbbbbbb0bbbbbbb3bbbbbb03bbbbbbb3bbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000222222220000000000000000000000000000000000000000000000000000000000000000
+00000000000882000088220000882200000882000008880000088800222222220000000000000000000000000000000000000000000000000000000000000000
+00700700000888800088888000888880000888800008888000088880222222220000000000000000000000000000000000000000000000000000000000000000
+0007700000b45b000045b5000045b50000b45b0000bb450000bb4500222222220000000000000000000000000000000000000000000000000000000000000000
+0007700000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb00222222220000000000000000000000000000000000000000000000000000000000000000
+007007000033bb000333bb00e333bb000033bb0000b33b0000b3bb00222222220000000000000000000000000000000000000000000000000000000000000000
+000000000b3ebb000ebbbbb000bbbbb00b3ebb003bb3eb000bb33ebb222222220000000000000000000000000000000000000000000000000000000000000000
+000000003bbbbbb03bbbbbbb0bbbbbbb3bbbbbb03bbbbbbb3bbbbbbb222222220000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
